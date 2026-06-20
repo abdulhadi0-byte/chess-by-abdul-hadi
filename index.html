@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game by Abdul_hadi</title>
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0a0a12 0%, #141424 100%);
+            --glass-bg: rgba(30, 30, 46, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --accent-primary: #00adb5;
+            --accent-glow: #00f2fe;
+            --text-main: #ffffff;
+            --text-muted: #a0a5c0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 20px rgba(0, 173, 181, 0.15);
+        }
+
+        .subtitle {
+            margin: 8px 0 0 0;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            width: 100%;
+            max-width: 1150px;
+        }
+
+        .board-wrapper {
+            position: relative;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 14px;
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 
+                        0 0 40px rgba(0, 173, 181, 0.05);
+            border: 1px solid var(--glass-border);
+        }
+
+        #myBoard {
+            width: 500px;
+            max-width: 85vw;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .control-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            padding: 35px;
+            border-radius: 24px;
+            width: 340px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .panel-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        select {
+            background: #080811;
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 14px 18px;
+            font-size: 0.95rem;
+            border-radius: 12px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 173, 181, 0.25);
+        }
+
+        .status-box {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 18px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-primary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, #007a80 100%);
+            box-shadow: 0 4px 15px rgba(0, 173, 181, 0.25);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 22px rgba(0, 173, 181, 0.45);
+            background: linear-gradient(135deg, var(--accent-glow) 0%, var(--accent-primary) 100%);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.13);
+            color: #ffffff;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .highlight-selected {
+            background-color: rgba(0, 173, 181, 0.25) !important;
+            box-shadow: inset 0 0 10px var(--accent-primary);
+        }
+
+        .highlight-legal {
+            position: relative;
+        }
+
+        .highlight-legal::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            background: rgba(0, 173, 181, 0.65);
+            border-radius: 50%;
+            pointer-events: none;
+            box-shadow: 0 0 10px var(--accent-glow);
+            z-index: 999;
+        }
+
+        @media (max-width: 950px) {
+            .game-container {
+                flex-direction: column;
+                gap: 30px;
+            }
+            .control-panel {
+                width: 500px;
+                max-width: 85vw;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Chess Game by Abdul_hadi</h1>
+        <p class="subtitle">Advanced Portfolio Instance • Live Highlights & Game History Reversal</p>
+    </div>
+
+    <div class="game-container">
+        <div class="board-wrapper">
+            <div id="myBoard"></div>
+        </div>
+
+        <div class="control-panel">
+            <div class="panel-section">
+                <label for="difficulty">AI Engine Level</label>
+                <select id="difficulty">
+                    <option value="1">Casual Mode (Depth 1)</option>
+                    <option value="5">Club Player (Depth 5)</option>
+                    <option value="12" selected>Master Engine (Depth 12)</option>
+                </select>
+            </div>
+
+            <div class="panel-section">
+                <label>Match Logs</label>
+                <div id="status" class="status-box">Your Turn (White). Click or drag a piece to begin.</div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" id="undoBtn">
+                    <span>↩</span> Undo Move
+                </button>
+                <button class="btn btn-primary" id="restartBtn">
+                    <span>🔄</span> Reset Arena
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+
+    <script>
+        let game = new Chess();
+        let board = null;
+        let selectedSquare = null;
+
+        const $status = $('#status');
+        const $difficulty = $('#difficulty');
+
+        function removeHighlights() {
+            $('#myBoard .square-55d63').removeClass('highlight-selected highlight-legal');
+        }
+
+        function showLegalMoves(square) {
+            removeHighlights();
+            $(`#myBoard .square-${square}`).addClass('highlight-selected');
+
+            let moves = game.moves({
+                square: square,
+                verbose: true
+            });
+
+            if (moves.length === 0) return;
+
+            moves.forEach(move => {
+                $(`#myBoard .square-${move.to}`).addClass('highlight-legal');
+            });
+        }
+
+        function handleSquareClick(square) {
+            if (game.game_over()) return;
+            if (game.turn() === 'b') return; 
+
+            let piece = game.get(square);
+
+            if (piece && piece.color === 'w') {
+                selectedSquare = square;
+                showLegalMoves(square);
+                return;
+            }
+
+            if (selectedSquare) {
+                let move = game.move({
+                    from: selectedSquare,
+                    to: square,
+                    promotion: 'q'
+                });
+
+                if (move === null) {
+                    removeHighlights();
+                    selectedSquare = null;
+                    return;
+                }
+
+                board.position(game.fen());
+                removeHighlights();
+                selectedSquare = null;
+                updateStatus();
+
+                window.setTimeout(makeEngineMove, 350);
+            }
+        }
+
+        function onDragStart (source, piece, position, orientation) {
+            if (game.game_over()) return false;
+            if (piece.search(/^b/) !== -1) return false;
+            showLegalMoves(source);
+        }
+
+        function onDrop (source, target) {
+            let move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q'
+            });
+
+            if (move === null) {
+                removeHighlights();
+                return 'snapback';
+            }
+
+            removeHighlights();
+            updateStatus();
+            window.setTimeout(makeEngineMove, 350);
+        }
+
+        function onSnapEnd () {
+            board.position(game.fen());
+        }
+
+        function makeEngineMove() {
+            if (game.game_over()) return;
+
+            $status.html('🤖 Stockfish is calculating optimal line...');
+            const currentFen = game.fen();
+            const targetDepth = $difficulty.val();
+
+            $.ajax({
+                url: 'https://chess-api.com/v1',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    fen: currentFen,
+                    depth: parseInt(targetDepth)
+                }),
+                success: function(response) {
+                    if(response && response.from && response.to) {
+                        game.move({
+                            from: response.from,
+                            to: response.to,
+                            promotion: response.promotion || 'q'
+                        });
+                        board.position(game.fen());
+                        updateStatus();
+                    } else {
+                        makeRandomFallbackMove();
+                    }
+                },
+                error: function() {
+                    makeRandomFallbackMove();
+                }
+            });
+        }
+
+        function makeRandomFallbackMove() {
+            const moves = game.moves({ verbose: true });
+            if (moves.length === 0) return;
+            const randomMove = moves[Math.floor(Math.random() * moves.length)];
+            game.move(randomMove);
+            board.position(game.fen());
+            updateStatus();
+        }
+
+        function updateStatus () {
+            let statusText = '';
+            let isEngineTurn = game.turn() === 'b';
+
+            if (game.in_checkmate()) {
+                statusText = `<b>Game Over!</b> ${isEngineTurn ? 'You Win! 🎉' : 'Stockfish Wins. 🤖'} (Checkmate)`;
+            } else if (game.in_draw()) {
+                statusText = '<b>Game Over.</b> Match concluded in a Draw/Stalemate 🤝';
+            } else {
+                statusText = isEngineTurn ? '🤖 Stockfish calculation active...' : 'Your Turn (White). Click or drag a piece.';
+                if (game.in_check()) {
+                    statusText += ' <br><span style="color: #ff4a6b; font-weight: bold;">⚠️ Warning: You are in Check!</span>';
+                }
+            }
+            $status.html(statusText);
+        }
+
+        const config = {
+            draggable: true,
+            position: 'start',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd,
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+        };
+        
+        board = Chessboard('myBoard', config);
+        updateStatus();
+
+        $('#myBoard').on('click', '.square-55d63', function() {
+            let square = $(this).attr('data-square');
+            handleSquareClick(square);
+        });
+
+        $('#undoBtn').on('click', function() {
+            if (game.history().length >= 2) {
+                game.undo(); 
+                game.undo(); 
+                board.position(game.fen());
+                removeHighlights();
+                selectedSquare = null;
+                updateStatus();
+            } else if (game.history().length === 1 && game.turn() === 'b') {
+                game.undo();
+                board.position(game.fen());
+                removeHighlights();
+                selectedSquare = null;
+                updateStatus();
+            }
+        });
+
+        $('#restartBtn').on('click', function() {
+            game.reset();
+            board.start();
+            removeHighlights();
+            selectedSquare = null;
+            updateStatus();
+        });
+    </script>
+</body>
+</html>
